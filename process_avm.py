@@ -21,7 +21,7 @@ def parse_im(p):
             "im":im,
             "xs":xs,
             "ys":ys,
-            "format"=im.format
+            "format":im.format
             }
     except:
         return {}
@@ -63,7 +63,7 @@ def parse_txt(t):
                 }
     
 def main():
-    r = "2010AfrSk..14...58M-001-000"
+    r = "../files2010/2010AfrSk..14...58M-001-000"
     p = r+".ppm"
     t = r+".txt"      
     png = parse_im(p)
@@ -73,21 +73,18 @@ def main():
     
     
     
-    avm = AVM()
-    avm.Spatial.CoordinateFrame = "ICRS"
-    avm.Spatial.ReferencePixel = []
-    avm.Spatial.Equinox = "J2000"
-    avm.Spatial.CDMatrix = []
-    avm.Spatial.ReferenceValue = [txt['ra'],txt['dec']]
-    avm.Spatial.ReferenceDimension = []
-    avm.Spatial.Scale = []
-    avm.Spatial.CoordsystemProjection = "TAN"
-    avm.Spatial.Quality: Full
-    avm.Spatial.Rotation: -0.22
-    
-    
-    avm.Spatial.
-    
+    # avm = AVM()
+    # avm.Spatial.CoordinateFrame = "ICRS"
+    # avm.Spatial.ReferencePixel = []
+    # avm.Spatial.Equinox = "J2000"
+    # avm.Spatial.CDMatrix = []
+    # avm.Spatial.ReferenceValue = [txt['ra'],txt['dec']]
+    # avm.Spatial.ReferenceDimension = []
+    # avm.Spatial.Scale = []
+    # avm.Spatial.CoordsystemProjection = "TAN"
+    # avm.Spatial.Quality: Full
+    # avm.Spatial.Rotation: -0.22
+    #    
     
 
 
