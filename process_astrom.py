@@ -106,6 +106,42 @@ def parse_txt(t):
             "rt":rt,
             } 
 
+def cd2cd(cdelt1, cdelt2, crota2, ret="cd"):
+    """ Yes.
+    Yes, I just wrote a program to do this.
+    [ 
+      ["CD1_1", "CD1_2"],
+      ["CD2_1", "CD2_2"]
+    ]
+    ==
+    [  
+       [(0,0), (0,1)],
+       [(1,0), (1,1)]
+    ]
+    i_j
+    axis, pixel
+    cdelt_i = row major
+    
+    """
+    cd = np.zeros((2,2))
+    pc = np.zeros((2,2))
+    crota2 = math.radians(crota2)
+    
+    cd[0,0] =  cdelt1 * math.cos(crota2)
+    cd[0,1] =  cdelt1 * math.sin(crota2)
+    cd[1,0] = -cdelt2 * math.sin(crota2)
+    cd[1,1] =  cdelt2 * math.cos(crota2)
+    
+    pc[0,0] = cd[0,0] / cdelt1
+    pc[0,1] = cd[0,1] / cdelt1
+    pc[1,0] = cd[1,0] / cdelt2
+    pc[1,1] = cd[1,1] / cdelt2
+    
+    if ret == "cd": 
+        return cd
+    elif ret == "pc": 
+        return pc
+    
 def build_wcs(img, txt):
     """ builder of wcs from input files
     """
@@ -122,32 +158,43 @@ def build_wcs(img, txt):
     w.wcs.crval = [txt['ra'], txt['dec']]
     
     # the pixel scale is the angular size in degrees / pixels in X, Y
-    w.wcs.cdelt = [-1.*txt['xs']/img['xs'], txt['ys']/img['ys']]
-
     # eventually I have to figure out the CROTAn/rotation axis. 
     # there is probably an axis flip in here too (PIL Image => FITS)
+
+    cdelt1, cdelt2 = (txt['xs']/img['xs'], txt['ys']/img['ys'])
+    cdelt1 = cdelt1 * -1.0
+    crota2 = txt['rt']
+    print(cdelt1, cdelt2, crota2)
+    
+    #w.wcs.cd = cd2cd(cdelt1, cdelt2, crota2, ret="cd")
+    w.wcs.pc = cd2cd(cdelt1, cdelt2, crota2, ret="pc")
+    w.wcs.cdelt = [cdelt1, cdelt2]
     
     return w
 
 def write_fits(img, hdr, out="test.fits"):
     # test new header with an output fits file
-    data = np.asarray(img['imgL'])
+    data = np.asarray(img['im'])
+    hdu = fits.PrimaryHDU(data, header=hdr)
+    hdu.writeto(out, clobber=True)
     return {}
 
-def test(rdir='test'):
-    r = "test/2010Ciel...72..113N-002-002"
-    p = r+".ppm"
-    t = r+".txt"      
+def test(tfile="astrom", tdir='test'):
+    p = os.path.join(tdir, tfile+".ppm")
+    t = os.path.join(tdir, tfile+".txt")
+    o = os.path.join(tdir, tfile+".fits")
     img = parse_img(p)
-    print(img)
+    #print(img)
     txt = parse_txt(t)
-    print(txt)   
+    #print(txt)   
     wco = build_wcs(img, txt)
     wco.printwcs()
-    print(wco.to_header())
+    #print(wco.to_header())
     hdr = wco.to_header()
     hdr['COMMENT'] = "Written by "+ s
-    write_fits(img, hdr, out="example.fits")
+    write_fits(img, hdr, out=o)
+    
+    return img, txt, wco
 
 def main():
 	pass
