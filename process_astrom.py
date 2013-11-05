@@ -44,7 +44,7 @@ def parse_img(p):
     try:
         img = Image.open(p)
         xs, ys = img.size
-        imgL = img.convert(mode="L")
+        imgL = img 
         return {
             "im":imgL,
             "xs":xs,
@@ -162,9 +162,11 @@ def build_wcs(img, txt):
     # there is probably an axis flip in here too (PIL Image => FITS)
 
     cdelt1, cdelt2 = (txt['xs']/img['xs'], txt['ys']/img['ys'])
-    cdelt1 = cdelt1 * -1.0
     crota2 = txt['rt']
-    print(cdelt1, cdelt2, crota2)
+    for k,v in dict(zip(
+        ("cdelt1", "cdelt2", "crota2"), (cdelt1, cdelt2, crota2)
+        )).items():    
+        print('{0:10} ==> {1:10f}'.format(k, v))
     
     #w.wcs.cd = cd2cd(cdelt1, cdelt2, crota2, ret="cd")
     w.wcs.pc = cd2cd(cdelt1, cdelt2, crota2, ret="pc")
@@ -177,10 +179,10 @@ def write_fits(img, hdr, out="test.fits"):
     data = np.asarray(img['im'])
     hdu = fits.PrimaryHDU(data, header=hdr)
     hdu.writeto(out, clobber=True)
-    return {}
+    return data
 
 def test(tfile="astrom", tdir='test'):
-    p = os.path.join(tdir, tfile+".ppm")
+    p = os.path.join(tdir, tfile+".png")
     t = os.path.join(tdir, tfile+".txt")
     o = os.path.join(tdir, tfile+".fits")
     img = parse_img(p)
@@ -188,13 +190,13 @@ def test(tfile="astrom", tdir='test'):
     txt = parse_txt(t)
     #print(txt)   
     wco = build_wcs(img, txt)
-    wco.printwcs()
+    #wco.printwcs()
     #print(wco.to_header())
     hdr = wco.to_header()
     hdr['COMMENT'] = "Written by "+ s
-    write_fits(img, hdr, out=o)
+    data = write_fits(img, hdr, out=o)
     
-    return img, txt, wco
+    return img, txt, wco, data
 
 def main():
 	pass
