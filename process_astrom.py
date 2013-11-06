@@ -13,6 +13,7 @@ from __future__ import print_function # i have to learn at some point
 import os
 import sys
 import math
+import datetime
 
 import Image
 
@@ -104,6 +105,7 @@ def parse_txt(t):
             "xs":xs,
             "ys":ys,
             "rt":rt,
+            "txt":data,
             } 
 
 def cd2cd(cdelt1, cdelt2, crota2, ret="cd"):
@@ -181,6 +183,58 @@ def write_fits(img, hdr, out="test.fits"):
     hdu.writeto(out, clobber=True)
     return data
 
+def lsp(l, s, p=[]):
+    # yes. yes, I did write this
+    #print(l,s,p)
+    if len(l) <= s:
+        #print('short')
+        p.append(l)
+        return p
+    else:
+        #print('long')
+        p.append(l[0:s])
+        return lsp(l[s:], s, p) 
+            
+def comments(hdr, stuff={"Written by":s}):
+    # if 1: 
+    #     print(stuff)
+    #     print(stuff.keys())
+    #     print(stuff.values())
+                 
+    if "Written by" not in stuff.keys(): 
+        stuff["Written by"] = s
+    
+    for k, v in stuff.items():
+        if not isinstance(v, (list, dict, tuple,)):
+            hdr['COMMENT'] = "{0} {1}".format(k,v)
+        else:
+            hdr['COMMENT'] = k
+            t = "  "
+            nt = 80 - 10*len(t) 
+            for l in v:
+                print("l: ",l)
+                ll = lsp(l, nt, [])
+                print("ll: ",ll)
+                for i,lll in enumerate(ll):  
+                    hdr['COMMENT'] = '|{0} {1}'.format(t*(i+1), lll)
+               
+    return hdr
+
+def fits2day():
+    # YYYY-MM-DDThh:mm:ss[.sss...]
+    a = "{!s}".format(datetime.datetime.today()).strip(" ")
+    return "T".join(a.split())[0:19]
+    
+def document(hdr, docs={"DATE":(fits2day(), "Creation date (apx)")}):
+    vkey = lambda v:str(v).upper()[0:8]
+    if "DATE" not in docs:
+        docs['DATE'] = (fits2day(), "Creation date (apx)")
+    for k, v in docs.items():
+        hdr[vkey(k)] = v
+    
+    return hdr
+            
+
 def test(tfile="astrom", tdir='test'):
     p = os.path.join(tdir, tfile+".png")
     t = os.path.join(tdir, tfile+".txt")
@@ -193,7 +247,9 @@ def test(tfile="astrom", tdir='test'):
     #wco.printwcs()
     #print(wco.to_header())
     hdr = wco.to_header()
-    hdr['COMMENT'] = "Written by "+ s
+    docs = {"REFERENC":(txt['bibcode'], "ADS Bibcode")}
+    hdr = document(hdr, docs=docs)
+    hdr = comments(hdr, stuff={'Original Header':txt['txt']})
     data = write_fits(img, hdr, out=o)
     
     return img, txt, wco, data
