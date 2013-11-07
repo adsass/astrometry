@@ -37,6 +37,7 @@ def write_thumbnail(img, size = (128, 128)):
     return {}
 
 def write_wwt_url(png, txt, file_url="http://www.example.net"):
+def write_wwt_url(hdr, imageurl="http://www.example.net", thumb=""):
     # the basic URL string for referencing a WWT image on the web
     # 
     # reverseparity=True

@@ -22,7 +22,9 @@ import numpy as np
 from astropy import wcs 
 from astropy.io import fits
 
-s = 'process_astrom.py'        
+s = 'process_astrom.py'
+        
+vkey = lambda v:str(v).upper()[0:8] # FITS key validator
 
 def id_img(p):
     """ stupid metadata extractor
@@ -45,7 +47,7 @@ def parse_img(p):
     try:
         img = Image.open(p)
         xs, ys = img.size
-        imgL = img 
+        imgL = img.convert("F") 
         return {
             "im":imgL,
             "xs":xs,
@@ -177,11 +179,14 @@ def build_wcs(img, txt):
     return w
 
 def write_fits(img, hdr, out="test.fits"):
-    # test new header with an output fits file
-    data = np.asarray(img['im'])
+    """ convert the image array to fits data; write out fits
+    """
+    # as dumb as it looks for now.
+    data = np.asarray(img['im']).copy() # transfer memory from PIL to np
     hdu = fits.PrimaryHDU(data, header=hdr)
     hdu.writeto(out, clobber=True)
-    return data
+    
+    return hdu, data # send back the converted image
 
 def lsp(l, s, p=[]):
     # yes. yes, I did write this
@@ -195,15 +200,36 @@ def lsp(l, s, p=[]):
         p.append(l[0:s])
         return lsp(l[s:], s, p) 
             
+def fits2day():
+    """ Create a valid FITS data string for today.
+    YYYY-MM-DDThh:mm:ss[.sss...]
+    """
+    tr = 19
+    a = "{!s}".format(datetime.datetime.today()).strip(" ")
+
+    return "T".join(a.split())[0:tr]
+
+def document(hdr, docs={"DATE":(fits2day(), "Creation date (apx)")}):
+    """ add documentation keys to headers.
+    defaults to add creator DATE. if not specified. 
+    """ 
+    if "DATE" not in docs:
+        docs['DATE'] = (fits2day(), "Creation date (apx)")
+        
+    for k, v in docs.items():
+        hdr[vkey(k)] = v
+    
+    return hdr
+
 def comments(hdr, stuff={"Written by":s}):
-    # if 1: 
-    #     print(stuff)
-    #     print(stuff.keys())
-    #     print(stuff.values())
-                 
+    """ function to add comments to FITS header. 
+    Clips and block quotes comments to make them fit in the 
+      FITS 80 char line length limit. 
+    """
+    hdr['COMMENT'] = "-"*70
     if "Written by" not in stuff.keys(): 
         stuff["Written by"] = s
-    
+
     for k, v in stuff.items():
         if not isinstance(v, (list, dict, tuple,)):
             hdr['COMMENT'] = "{0} {1}".format(k,v)
@@ -212,28 +238,13 @@ def comments(hdr, stuff={"Written by":s}):
             t = "  "
             nt = 80 - 10*len(t) 
             for l in v:
-                print("l: ",l)
+                #print("l: ",l)
                 ll = lsp(l, nt, [])
-                print("ll: ",ll)
+                #print("ll: ",ll)
                 for i,lll in enumerate(ll):  
                     hdr['COMMENT'] = '|{0} {1}'.format(t*(i+1), lll)
-               
-    return hdr
 
-def fits2day():
-    # YYYY-MM-DDThh:mm:ss[.sss...]
-    a = "{!s}".format(datetime.datetime.today()).strip(" ")
-    return "T".join(a.split())[0:19]
-    
-def document(hdr, docs={"DATE":(fits2day(), "Creation date (apx)")}):
-    vkey = lambda v:str(v).upper()[0:8]
-    if "DATE" not in docs:
-        docs['DATE'] = (fits2day(), "Creation date (apx)")
-    for k, v in docs.items():
-        hdr[vkey(k)] = v
-    
     return hdr
-            
 
 def test(tfile="astrom", tdir='test'):
     p = os.path.join(tdir, tfile+".png")
@@ -247,12 +258,13 @@ def test(tfile="astrom", tdir='test'):
     #wco.printwcs()
     #print(wco.to_header())
     hdr = wco.to_header()
-    docs = {"REFERENC":(txt['bibcode'], "ADS Bibcode")}
+    docs = {"REFERENC":(txt['bibcode'], "ADS Bibcode"),
+            "CROTAX":(txt['rt'], "CROTA2 (hidden)")}
     hdr = document(hdr, docs=docs)
     hdr = comments(hdr, stuff={'Original Header':txt['txt']})
-    data = write_fits(img, hdr, out=o)
+    hdu, data = write_fits(img, hdr, out=o)
     
-    return img, txt, wco, data
+    return img, txt, wco, data, hdu
 
 def main():
 	pass
@@ -260,4 +272,3 @@ def main():
 
 if __name__ == '__main__':
 	main()
-
