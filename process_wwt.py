@@ -15,11 +15,14 @@ import sys
 import math
 
 import Image
+import requests
 
 import numpy as np
 
 from astropy import wcs 
 from astropy.io import fits
+
+from process_astrom import parse_img, parse_txt, build_wcs, document, comments
 
 s = 'process_avm.py'        
 
@@ -36,7 +39,6 @@ def write_thumbnail(img, size = (128, 128)):
             
     return {}
 
-def write_wwt_url(png, txt, file_url="http://www.example.net"):
 def write_wwt_url(hdr, imageurl="http://www.example.net", thumb=""):
     # the basic URL string for referencing a WWT image on the web
     # 
@@ -54,9 +56,48 @@ def write_wwt_url(hdr, imageurl="http://www.example.net", thumb=""):
     # thumb=http://farm4.staticflickr.com/3824/9785561024_08ebe259a2_q.jpg
     
     wwtroot = "http://www.worldwidetelescope.org/wwtweb/ShowImage.aspx?"
-    
-    return {}
+    wurl = {}
+    wurl['reverseparity'] = "True"
+    wurl['scale'] = hdr['CDELT1'] * 3600. # arsec/pixel, not deg/pixel
+    wurl['name'] = "test"
+    wurl['imageurl'] = imageurl
+    wurl['credits']="ADS+All+Sky+Survey"
+    wurl['creditsUrl'] = 'http://adsass.org'
+    wurl['ra'] = hdr['CRVAL1']
+    wurl['y'] = hdr['CRPIX2']
+    wurl['x'] = hdr['CRPIX1']
+    wurl['rotation'] = hdr['CROTAX']
+    wurl['dec'] = hdr['CRVAL2']
+    wurl['thumb'] = thumb
 
+    r = requests.get(wwtroot,params=wurl)
+    return r
+
+def test(tfile="astrom", tdir='test'):
+    p = os.path.join(tdir, tfile+".png")
+    t = os.path.join(tdir, tfile+".txt")
+    o = os.path.join(tdir, tfile+".fits")
+    img = parse_img(p)
+    #print(img)
+    txt = parse_txt(t)
+    #print(txt)   
+    wco = build_wcs(img, txt)
+    #wco.printwcs()
+    #print(wco.to_header())
+    hdr = wco.to_header()
+    docs = {"REFERENC":(txt['bibcode'], "ADS Bibcode"),
+            "CROTAX":(txt['rt'], "CROTA2 (hidden)")}
+            
+    hdr = document(hdr, docs=docs)
+    hdr = comments(hdr, stuff={'Original Header':txt['txt']})
+    
+    print(hdr['CDELT1'])
+    
+    wurl = write_wwt_url(hdr,
+        imageurl="http://farm4.staticflickr.com/3820/10729597246_dd2f5efded_o_d.png",
+        thumb="http://farm6.staticflickr.com/5514/10729613634_92ccb2593a_o_d.png")
+
+    return wurl, hdr
 
 def main():
     pass
