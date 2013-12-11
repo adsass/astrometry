@@ -24,8 +24,20 @@ from astropy.io import fits
 
 from process_astrom import parse_img, parse_txt, build_wcs, document, comments
 
-s = 'process_avm.py'        
+s = 'process_wwt.py'        
 
+def write_lowres(img, hdr, scale=2):
+    """
+        shrink image pxiel dim and resolution by factor "scale"
+    """
+    # img.resize(x/scale,y/scale) # resample 
+    # hdr['CRPIX1']/scale # recenter
+    # hdr['CDELT1'] * scale # scale resolution UP
+    # hdr['NAXIS1'] => I think NAXIS# are added when the hdr is appended to the img
+    limg = img
+    lhdr = hdr
+    return (limg, lhdr, scale)
+    
 def write_thumbnail(img, size = (128, 128)):
     # if called use PIL to create a thumbnail
     outfile = os.path.splitext(infile)[0] + ".thumbnail"
@@ -73,7 +85,7 @@ def write_wwt_url(hdr, imageurl="http://www.example.net", thumb=""):
     r = requests.get(wwtroot,params=wurl)
     return r
 
-def test(tfile="astrom", tdir='test'):
+def test(tfile="astrom", tdir='/tmp/'):
     p = os.path.join(tdir, tfile+".png")
     t = os.path.join(tdir, tfile+".txt")
     o = os.path.join(tdir, tfile+".fits")
@@ -94,8 +106,10 @@ def test(tfile="astrom", tdir='test'):
     print(hdr['CDELT1'])
     
     wurl = write_wwt_url(hdr,
-        imageurl="http://farm4.staticflickr.com/3820/10729597246_dd2f5efded_o_d.png",
-        thumb="http://farm6.staticflickr.com/5514/10729613634_92ccb2593a_o_d.png")
+        # imageurl="http://farm4.staticflickr.com/3820/10729597246_dd2f5efded_o_d.png",
+        # thumb="http://farm6.staticflickr.com/5514/10729613634_92ccb2593a_o_d.png")
+        imageurl="https://www.cfa.harvard.edu/~gmuench/astrom.png",
+        thumb="https://www.cfa.harvard.edu/~gmuench/astrom_tmb.png")
 
     return wurl, hdr
 
