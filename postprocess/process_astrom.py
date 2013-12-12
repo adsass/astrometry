@@ -97,7 +97,7 @@ def parse_txt(t):
     with open(t) as f:
         data = f.readlines()
         data = [d.strip() for d in data]
-        if len(data) == 3: return {solved:False}
+        if len(data) == 3: return {"solved":False}
         pf = parse_filename(data[0].split(" ")[-1])
         bibcode, figN, page = [pf.get(i) for i in ['bibcode','figN','page']]
         #bibcode = data[0][15:34]
@@ -166,8 +166,8 @@ def cd2cd(cdelt1, cdelt2, crota2, ret="cd"):
     elif ret == "pc": 
         return pc
 
-def build_wcs(img, txt):
-    """ builder of wcs from input files
+def build_hdr(img, txt):
+    """ builder of hdr from input files
     """
     # converters
     ldpix = lambda x: math.floor(x/2)
@@ -196,7 +196,17 @@ def build_wcs(img, txt):
     w.wcs.pc = cd2cd(cdelt1, cdelt2, crota2, ret="pc")
     w.wcs.cdelt = [cdelt1, cdelt2]
     
-    return w
+    hdr = w.to_header()
+    
+    # add documentation from txt file
+    docs = {"REFERENC":(txt['bibcode'], "ADS Bibcode"),
+            "REF_FIGN":(txt['figN'], "Figure Number"),
+            "REF_PAGE":(txt['page'], "Page Number"),
+            "CROTAX":(txt['rt'], "CROTA2 (hidden)")}
+    hdr = document(hdr, docs=docs)
+    hdr = comments(hdr, stuff={'Original Header':txt['txt']})
+    
+    return hdr
 
 def write_fits(img, hdr, out="test.fits"):
     """ convert the image array to fits data; write out fits
@@ -211,13 +221,10 @@ def write_fits(img, hdr, out="test.fits"):
 def lsp(l, s, p=[]):
     """ yes. yes, I did write this
     """
-    #print(l,s,p)
     if len(l) <= s:
-        #print('short')
         p.append(l)
         return p
     else:
-        #print('long')
         p.append(l[0:s])
         return lsp(l[s:], s, p) 
 
@@ -259,39 +266,44 @@ def comments(hdr, stuff={"Written by":s}):
             t = "  "
             nt = 80 - 10*len(t) 
             for l in v:
-                #print("l: ",l)
                 ll = lsp(l, nt, [])
-                #print("ll: ",ll)
                 for i,lll in enumerate(ll):  
                     hdr['COMMENT'] = '|{0} {1}'.format(t*(i+1), lll)
                     
     return hdr
 
-def test(tfile="astrom", tdir='/tmp/'):
-    p = os.path.join(tdir, tfile+".png")
-    t = os.path.join(tdir, tfile+".txt")
-    o = os.path.join(tdir, tfile+".fits")
-    img = parse_img(p)
-    #print(img)
-    txt = parse_txt(t)
-    #print(txt)   
-    wco = build_wcs(img, txt)
-    #wco.printwcs()
-    #print(wco.to_header())
-    hdr = wco.to_header()
-    docs = {"REFERENC":(txt['bibcode'], "ADS Bibcode"),
-            "REF_FIGN":(txt['figN'], "Figure Number"),
-            "REF_PAGE":(txt['page'], "Page Number"),
-            "CROTAX":(txt['rt'], "CROTA2 (hidden)")}
-    hdr = document(hdr, docs=docs)
-    hdr = comments(hdr, stuff={'Original Header':txt['txt']})
-    hdu, data = write_fits(img, hdr, out=o)
+def tabulate(t):
     
-    return img, txt, wco, data, hdu
+
+def test():
+    """ a real test 
+    """
+    return 
+
+def run(f):
+    """ postprocess an astrometry.net files
+        
+    """
+    # check files exists
+    r = ".".join(f.split(".")[:-1])
+    p, t = [r+"."+x for x in ('png','txt')] 
+    s = sum(map(os.path.exists, (p, t)))
+    if s < 2:
+        print('{0} input files are missing'.format(2-s))
+        return {}
+
+    txt = parse_txt(t)
+    img = parse_img(p)
+    
+    hdr = txt['solved'] and build_hdr(img, txt) or None
+        
+    return {'hdr':hdr, 'txt':txt, 'img':img}
 
 def main():
-	pass
-
-
+    flist = [f for f in os.listdir(".") if (f[-3:] == "png")]
+    p = map(run, flist)
+    
+    
+    
 if __name__ == '__main__':
 	main()
