@@ -1,0 +1,19 @@
+#!/bin/sh
+#BSUB -n 1 #Number of cores
+#BSUB -J astrometry #Name of run
+#BSUB -oo astrometry.out #output file
+#BSUB -eo astrometry.err #error file
+#BSUB -q normal_serial #queue
+#BSUB -R "rusage[mem=2048]" #Memory per node in MB
+
+#Grabs the list of files we will be working on.
+filelist=$(cat file1.txt)
+
+echo $filelist
+
+#Processes each file.
+for f in $filelist
+do
+	echo "python astrometry.py $f"
+	python astrometry.py $f
+done

@@ -1,0 +1,15 @@
+#!/bin/sh
+#SBATCH --mem=2048 #Memory per node in MB
+
+#Grabs the list of files we will be working on.
+#filelist=$(cat file1.txt)
+
+echo $filelist
+
+#Processes each file.
+for f in $filelist
+do
+#        echo "python astrometry.py $f"
+        python astrometry.py $f
+done
+
