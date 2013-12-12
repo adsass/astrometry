@@ -21,6 +21,7 @@ import numpy as np
 
 from astropy import wcs 
 from astropy.io import fits
+from astropy.table import Table
 
 s = 'process_astrom.py'
         
@@ -187,10 +188,10 @@ def build_hdr(img, txt):
     
     cdelt1, cdelt2 = (txt['xs']/img['xs'], txt['ys']/img['ys'])
     crota2 = txt['rt']
-    for k,v in dict(zip(
-        ("cdelt1", "cdelt2", "crota2"), (cdelt1, cdelt2, crota2)
-        )).items():    
-        print('{0:10} ==> {1:10f}'.format(k, v))
+    # for k,v in dict(zip(
+    #     ("cdelt1", "cdelt2", "crota2"), (cdelt1, cdelt2, crota2)
+    #     )).items():    
+    #     print('{0:10} ==> {1:10f}'.format(k, v))
     
     #w.wcs.cd = cd2cd(cdelt1, cdelt2, crota2, ret="cd")
     w.wcs.pc = cd2cd(cdelt1, cdelt2, crota2, ret="pc")
@@ -273,7 +274,10 @@ def comments(hdr, stuff={"Written by":s}):
     return hdr
 
 def tabulate(t):
-    
+    #find a good header
+    h = 1
+    # while h:
+    #     if t[]
 
 def test():
     """ a real test 
