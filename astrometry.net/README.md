@@ -3,7 +3,7 @@ This directory contains the scripts that were run on the Odyssey cluster (odysse
 ## Odyssey server instructions
 
 **To load astrometry run**
-module load hpc/astrometry-0.40
+``module load hpc/astrometry-0.40``
 
 **Run astrometry with**
 solve-field --downsample 4 (image)
