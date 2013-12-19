@@ -1,6 +1,7 @@
 *.ipynb
 *.pyc
-test/*
+
+test/
 
 postprocess/allfiles.csv
 

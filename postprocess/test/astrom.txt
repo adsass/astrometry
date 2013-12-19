@@ -1,5 +1,0 @@
-testing image: 2010Ciel...72..113N-002-002.ppm
-#non-inverted image solved without SIMBAD coordinates in 613.357455015 seconds
-(56.7, 24.15)
-81.4539 x 59.1175 arcminutes
-Field rotation angle: up is -179.411 degrees E of N
