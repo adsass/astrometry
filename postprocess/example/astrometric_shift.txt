@@ -1,0 +1,5 @@
+testing image: 1910ApJ....32...26R-014-017.ppm
+#non-inverted image solved with SIMBAD coordinates in 61.2168359756 seconds
+(83.63, 22.02)
+7.89934 x 6.38918 arcminutes
+Field rotation angle: up is 0.228325 degrees E of N
