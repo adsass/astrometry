@@ -1,2 +1,6 @@
 *.ipynb
 *.pyc
+
+postprocess/allfiles.csv
+
+postprocess/allfiles.xml
