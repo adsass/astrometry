@@ -209,7 +209,7 @@ def build_hdr(img, txt):
     
     return hdr
 
-def write_fits(img, hdr, out="test.fits"):
+def write_fits(img, hdr, out="test.fits", ret=False):
     """ convert the image array to fits data; write out fits
     """
     # as dumb as it looks for now.
@@ -217,7 +217,10 @@ def write_fits(img, hdr, out="test.fits"):
     hdu = fits.PrimaryHDU(data, header=hdr)
     hdu.writeto(out, clobber=True)
     
-    return hdu, data # send back the converted image
+    if ret:
+        return hdu, data # send back the converted image
+    else:
+        return None
 
 def lsp(l, s, p=[]):
     """ yes. yes, I did write this
