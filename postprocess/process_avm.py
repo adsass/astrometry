@@ -6,8 +6,8 @@ process_avm.py :: given metadata set, write XMP sidecar, insert into files
 Created by August Muench on 2013-09-17.
 Copyright (c) 2013 Smithsonian Astrophysical Observatory. All rights reserved.
 """
-from __future__ import division # confidence high
-from __future__ import print_function # i have to learn at some point
+from __future__ import division  # confidence high
+from __future__ import print_function  # i have to learn at some point
 
 import os
 import sys
@@ -18,22 +18,25 @@ import Image
 
 import numpy as np
 
-from astropy import wcs 
+from astropy import wcs
 from astropy.io import fits
 
 s = 'process_avm.py'
 
+
 def write_xmp_sidecar(metadata):
     # take metadata dictionary and write xmp side car
     return {}
-    
+
+
 def insert_xmp(metadata, png, sidecar="foo.xmp"):
     # given a prebuilt AVM tags
-    # insert into PNG.     
+    # insert into PNG.
     return {}
-    
+
+
 def author_avm():
-    # given metadata, write out AVM. 
+    # given metadata, write out AVM.
     # avm = AVM()
     # avm.Spatial.CoordinateFrame = "ICRS"
     # avm.Spatial.ReferencePixel = []
@@ -45,15 +48,16 @@ def author_avm():
     # avm.Spatial.CoordsystemProjection = "TAN"
     # avm.Spatial.Quality: Full
     # avm.Spatial.Rotation: -0.22
-    # 
-    return {} 
+    #
+    return {}
+
 
 def test_avm():
     pass
-    
+
+
 def main():
     pass
 
 if __name__ == '__main__':
     main()
-
